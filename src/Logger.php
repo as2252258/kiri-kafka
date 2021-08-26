@@ -101,7 +101,7 @@ class Logger implements LoggerInterface
 
 	/**
 	 * @param $level
-	 * @param $message
+	 * @param mixed $message
 	 * @param array $context
 	 * @throws Exception
 	 */
