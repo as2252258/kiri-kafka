@@ -22,25 +22,26 @@ use Kiri\Kiri;
 	 * Kafka constructor.
 	 * @param string $topic
 	 */
-	public function __construct(public string $topic)
+	public function __construct(string $topic)
 	{
 	}
 
 
 	/**
+	 * @param static $params
 	 * @param mixed $class
 	 * @param mixed|null $method
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function execute(mixed $class, mixed $method = null): bool
+    public static function execute(mixed $params, mixed $class, mixed $method = null): bool
 	{
 		if (!in_array(ConsumerInterface::class, class_implements($class))) {
     		return false;
 		}
 		/** @var KafkaProvider $container */
 		$container = Kiri::getDi()->get(KafkaProvider::class);
-		$container->addConsumer($this->topic, $class);
+		$container->addConsumer($params->topic, $class);
 
 		return true;
 	}
