@@ -11,7 +11,7 @@ use RdKafka\Consumer;
 use RdKafka\ConsumerTopic;
 use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
-use Server\Abstracts\CustomProcess;
+use Server\Abstracts\OnProcessInterface;
 use Swoole\Process;
 use Throwable;
 
@@ -19,7 +19,7 @@ use Throwable;
  * Class Queue
  * @package Queue
  */
-class Kafka extends CustomProcess
+class Kafka extends OnProcessInterface
 {
 
 
