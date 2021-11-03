@@ -13,7 +13,6 @@ use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use Server\Abstracts\BaseProcess;
 use Swoole\Coroutine;
-use Swoole\Coroutine\Barrier;
 use Swoole\Process;
 use Throwable;
 
@@ -57,13 +56,13 @@ class Kafka extends BaseProcess
 	 */
 	public function onHandler(Process $process): void
 	{
-		$barrier = Barrier::make();
+		$array = [];
 		foreach ($this->kafkaConfig as $value) {
-			Coroutine::create(function ($value) {
+			$array[] = go(function () use ($value) {
 				$this->waite($value);
-			}, $value);
+			});
 		}
-		Barrier::wait($barrier);
+		Coroutine::join($array, -1);
 	}
 
 
