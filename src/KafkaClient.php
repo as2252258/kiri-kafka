@@ -29,8 +29,6 @@ class KafkaClient
 	 * @param string $topic
 	 * @param string $groupId
 	 * @throws ConfigException
-	 * @throws NotFindClassException
-	 * @throws ReflectionException
 	 */
 	public function __construct(public string $topic, public string $groupId)
 	{

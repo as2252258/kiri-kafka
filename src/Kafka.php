@@ -12,6 +12,8 @@ use RdKafka\ConsumerTopic;
 use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use Server\Abstracts\BaseProcess;
+use Swoole\Coroutine;
+use Swoole\Coroutine\Barrier;
 use Swoole\Process;
 use Throwable;
 
@@ -21,6 +23,11 @@ use Throwable;
  */
 class Kafka extends BaseProcess
 {
+
+	protected bool $enableSwooleCoroutine = true;
+
+
+	protected string $name = 'kafka';
 
 
 	/**
@@ -50,16 +57,21 @@ class Kafka extends BaseProcess
 	 */
 	public function onHandler(Process $process): void
 	{
-		$this->waite($process, $this->kafkaConfig);
+		$barrier = Barrier::make();
+		foreach ($this->kafkaConfig as $value) {
+			Coroutine::create(function ($value) {
+				$this->waite($value);
+			}, $value);
+		}
+		Barrier::wait($barrier);
 	}
 
 
 	/**
-	 * @param Process $process
 	 * @param array $kafkaServer
 	 * @throws \Exception
 	 */
-	private function waite(Process $process, array $kafkaServer)
+	private function waite(array $kafkaServer)
 	{
 		try {
 			[$config, $topic, $conf] = $this->kafkaConfig($kafkaServer);
@@ -70,13 +82,7 @@ class Kafka extends BaseProcess
 			$topic = $objRdKafka->newTopic($kafkaServer['topic'], $topic);
 
 			$topic->consumeStart(0, RD_KAFKA_OFFSET_STORED);
-			do {
-				if ($this->checkProcessIsStop()) {
-					$this->exit();
-					break;
-				}
-				$this->resolve($topic, $conf['interval'] ?? 1000);
-			} while (true);
+			$this->resolve($topic, $conf['interval'] ?? 1000);
 		} catch (Throwable $exception) {
 			logger()->addError($exception, 'throwable');
 		}
@@ -90,22 +96,24 @@ class Kafka extends BaseProcess
 	 */
 	private function resolve(ConsumerTopic $topic, $interval)
 	{
-		try {
-			$message = $topic->consume(0, $interval);
-			if (!empty($message)) {
-				if ($message->err == RD_KAFKA_RESP_ERR_NO_ERROR) {
-					$this->handlerExecute($message->topic_name, $message);
-				} else if ($message->err == RD_KAFKA_RESP_ERR__PARTITION_EOF) {
-					logger()->warning('No more messages; will wait for more');
-				} else if ($message->err == RD_KAFKA_RESP_ERR__TIMED_OUT) {
-					logger()->error('Kafka Timed out');
-				} else {
-					logger()->error($message->errstr());
+		do {
+			try {
+				$message = $topic->consume(0, $interval);
+				if (!empty($message)) {
+					if ($message->err == RD_KAFKA_RESP_ERR_NO_ERROR) {
+						$this->handlerExecute($message->topic_name, $message);
+					} else if ($message->err == RD_KAFKA_RESP_ERR__PARTITION_EOF) {
+						logger()->warning('No more messages; will wait for more');
+					} else if ($message->err == RD_KAFKA_RESP_ERR__TIMED_OUT) {
+						logger()->error('Kafka Timed out');
+					} else {
+						logger()->error($message->errstr());
+					}
 				}
+			} catch (Throwable $exception) {
+				logger()->addError($exception, 'throwable');
 			}
-		} catch (Throwable $exception) {
-			logger()->addError($exception, 'throwable');
-		}
+		} while (true);
 	}
 
 
@@ -150,7 +158,7 @@ class Kafka extends BaseProcess
 			$conf->setSocketTimeoutMs(30000);
 
 			if (function_exists('pcntl_sigprocmask')) {
-				pcntl_sigprocmask(SIG_BLOCK, array(SIGIO));
+				pcntl_sigprocmask(SIG_BLOCK, [SIGIO]);
 				$conf->setInternalTerminationSignal((string)SIGIO);
 			}
 

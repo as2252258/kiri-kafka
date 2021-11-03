@@ -36,11 +36,7 @@ class KafkaImports extends Providers
 		if (empty($kafkaServers)) {
 			return;
 		}
-		/** @var Server $server */
-		$server = $application->get('server');
-		foreach ($kafkaServers as $kafkaServer) {
-			$server->addProcess(new Kafka($kafkaServer));
-		}
+		$application->getServer()->addProcess(new Kafka($kafkaServers));
 	}
 
 }
