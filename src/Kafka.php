@@ -27,7 +27,7 @@ class Kafka extends BaseProcess
 	protected bool $enableSwooleCoroutine = true;
 
 
-	protected string $name = 'kafka';
+	public string $name = 'kafka';
 
 
 	/**
