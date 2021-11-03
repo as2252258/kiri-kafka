@@ -12,6 +12,7 @@ use RdKafka\ConsumerTopic;
 use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use Server\Abstracts\BaseProcess;
+use Swoole\Coroutine;
 use Swoole\Process;
 use Throwable;
 
@@ -56,13 +57,9 @@ class Kafka extends BaseProcess
 	public function onHandler(Process $process): void
 	{
 		foreach ($this->kafkaConfig as $value) {
-			$process = new Process(function () use ($value) {
+			Coroutine::create(function () use ($value) {
 				$this->waite($value);
 			});
-			$process->start();
-		}
-		foreach ($this->kafkaConfig as $value) {
-			Process::wait(true);
 		}
 	}
 
