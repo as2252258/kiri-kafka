@@ -61,6 +61,7 @@ class Kafka extends BaseProcess
 			$array[] = go(function () use ($value) {
 				$this->waite($value);
 			});
+			var_dump($value);
 		}
 		Coroutine::join($array, -1);
 	}
