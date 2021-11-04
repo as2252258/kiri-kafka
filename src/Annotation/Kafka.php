@@ -28,11 +28,9 @@ use Kiri\Kiri;
 
 
 	/**
-	 * @param static $params
 	 * @param mixed $class
 	 * @param mixed|null $method
 	 * @return bool
-	 * @throws Exception
 	 */
     public function execute(mixed $class, mixed $method = null): bool
 	{

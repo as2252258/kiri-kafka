@@ -12,7 +12,6 @@ use RdKafka\ConsumerTopic;
 use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use Server\Abstracts\BaseProcess;
-use Swoole\Coroutine;
 use Swoole\Process;
 use Throwable;
 
@@ -56,27 +55,13 @@ class Kafka extends BaseProcess
 	 */
 	public function onHandler(Process $process): void
 	{
-		Coroutine::set(['hook_flags' => SWOOLE_HOOK_ALL]);
-		foreach ($this->kafkaConfig as $value) {
-			Coroutine::create(function () use ($value) {
-				$this->waite($value);
-			});
-		}
-	}
-
-	/**
-	 * @param array $kafkaServer
-	 * @throws \Exception
-	 */
-	private function waite(array $kafkaServer)
-	{
 		try {
-			[$config, $topic, $conf] = $this->kafkaConfig($kafkaServer);
+			[$config, $topic, $conf] = $this->kafkaConfig($this->kafkaConfig);
 			if (empty($config) && empty($topic) && empty($conf)) {
 				return;
 			}
 			$objRdKafka = new Consumer($config);
-			$topic = $objRdKafka->newTopic($kafkaServer['topic'], $topic);
+			$topic = $objRdKafka->newTopic($this->kafkaConfig['topic'], $topic);
 
 			$topic->consumeStart(0, RD_KAFKA_OFFSET_STORED);
 			$this->resolve($topic, $conf['interval'] ?? 1000);
@@ -93,24 +78,25 @@ class Kafka extends BaseProcess
 	 */
 	private function resolve(ConsumerTopic $topic, $interval)
 	{
-		do {
-			try {
-				$message = $topic->consume(0, $interval);
-				if (!empty($message)) {
-					if ($message->err == RD_KAFKA_RESP_ERR_NO_ERROR) {
-						$this->handlerExecute($message->topic_name, $message);
-					} else if ($message->err == RD_KAFKA_RESP_ERR__PARTITION_EOF) {
-						logger()->warning('No more messages; will wait for more');
-					} else if ($message->err == RD_KAFKA_RESP_ERR__TIMED_OUT) {
-						logger()->error('Kafka Timed out');
-					} else {
-						logger()->error($message->errstr());
-					}
-				}
-			} catch (Throwable $exception) {
-				logger()->addError($exception, 'throwable');
+		try {
+			$message = $topic->consume(0, $interval);
+			if (empty($message)) {
+				return;
 			}
-		} while (true);
+			if ($message->err == RD_KAFKA_RESP_ERR_NO_ERROR) {
+				$this->handlerExecute($message->topic_name, $message);
+			} else if ($message->err == RD_KAFKA_RESP_ERR__PARTITION_EOF) {
+				logger()->warning('No more messages; will wait for more');
+			} else if ($message->err == RD_KAFKA_RESP_ERR__TIMED_OUT) {
+				logger()->error('Kafka Timed out');
+			} else {
+				logger()->error($message->errstr());
+			}
+		} catch (Throwable $exception) {
+			logger()->addError($exception, 'throwable');
+		} finally {
+			$this->resolve($topic, $interval);
+		}
 	}
 
 

@@ -5,7 +5,6 @@ namespace Kafka;
 
 
 use Exception;
-use Http\Server;
 use Kiri\Abstracts\Config;
 use Kiri\Abstracts\Config as SConfig;
 use Kiri\Abstracts\Providers;
@@ -36,7 +35,10 @@ class KafkaImports extends Providers
 		if (empty($kafkaServers)) {
 			return;
 		}
-		$application->getServer()->addProcess(new Kafka($kafkaServers));
+		$server = $application->getServer();
+		foreach ($kafkaServers as $kafkaServer) {
+			$server->addProcess(new Kafka($kafkaServer));
+		}
 	}
 
 }
