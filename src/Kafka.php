@@ -33,6 +33,7 @@ class Kafka extends BaseProcess
 	 */
 	public function __construct(public array $kafkaConfig)
 	{
+		$this->name .= '.' . $this->kafkaConfig['topic'];
 	}
 
 
