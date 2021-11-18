@@ -53,7 +53,7 @@ class Kafka extends BaseProcess
 	 * @param Process $process
 	 * @throws \Exception
 	 */
-	public function onProcessExec(Process $process): void
+	public function process(Process $process): void
 	{
 		try {
 			[$config, $topic, $conf] = $this->kafkaConfig($this->kafkaConfig);
