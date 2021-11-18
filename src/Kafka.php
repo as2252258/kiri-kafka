@@ -38,13 +38,12 @@ class Kafka extends BaseProcess
 
 
 	/**
-	 * @param Process $process
 	 * @return string
 	 * @throws ConfigException
 	 */
-	public function getProcessName(Process $process): string
+	public function getName(): string
 	{
-		$name = Config::get('id', 'system') . '[' . $process->pid . ']';
+		$name = Config::get('id', 'system') . '[' . getmypid() . ']';
 
 		return $name . '.' . 'Kafka Consumer ' . $this->kafkaConfig['topic'];
 	}
@@ -54,7 +53,7 @@ class Kafka extends BaseProcess
 	 * @param Process $process
 	 * @throws \Exception
 	 */
-	public function onHandler(Process $process): void
+	public function onProcessExec(Process $process): void
 	{
 		try {
 			[$config, $topic, $conf] = $this->kafkaConfig($this->kafkaConfig);
