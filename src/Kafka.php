@@ -39,13 +39,10 @@ class Kafka extends BaseProcess
 
 	/**
 	 * @return string
-	 * @throws ConfigException
 	 */
 	public function getName(): string
 	{
-		$name = Config::get('id', 'system') . '[' . getmypid() . ']';
-
-		return $name . '.' . 'Kafka Consumer ' . $this->kafkaConfig['topic'];
+		return 'Kafka Consumer ' . $this->kafkaConfig['topic'];
 	}
 
 
