@@ -104,7 +104,7 @@ class KafkaClient
 	 */
 	private function getProducer(): Producer
 	{
-		return Kiri::getDi()->get(Producer::class, [$this->conf]);
+		return Kiri::getDi()->make(Producer::class, [$this->conf]);
 	}
 
 
