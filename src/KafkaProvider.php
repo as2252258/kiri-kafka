@@ -4,14 +4,14 @@
 namespace Kafka;
 
 
-use Kiri\Abstracts\BaseObject;
+use Kiri\Abstracts\Component;
 
 
 /**
  * Class KafkaProvider
  * @package Kafka
  */
-class KafkaProvider extends BaseObject
+class KafkaProvider extends Component
 {
 
 
