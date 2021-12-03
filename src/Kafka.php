@@ -104,7 +104,7 @@ class Kafka extends BaseProcess
 	 */
 	protected function handlerExecute($topic, $message)
 	{
-		go(function () use ($topic, $message) {
+		go(static function () use ($topic, $message) {
 			try {
 				$server = Kiri::app()->getSwoole();
 
