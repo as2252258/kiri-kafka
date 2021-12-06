@@ -4,8 +4,6 @@ declare(strict_types=1);
 namespace Kafka;
 
 
-use Kiri\Abstracts\Config;
-use Kiri\Exception\ConfigException;
 use Kiri\Kiri;
 use RdKafka\Consumer;
 use RdKafka\ConsumerTopic;
@@ -33,7 +31,7 @@ class Kafka extends BaseProcess
 	 */
 	public function __construct(public array $kafkaConfig)
 	{
-		$this->name .= ' consumer `' . $this->kafkaConfig['topic'].'`';
+		$this->name .= ' consumer `' . $this->kafkaConfig['topic'] . '`';
 	}
 
 
@@ -92,6 +90,9 @@ class Kafka extends BaseProcess
 		} catch (Throwable $exception) {
 			logger()->addError($exception, 'throwable');
 		} finally {
+			if ($this->isStop()) {
+				return;
+			}
 			$this->resolve($topic, $interval);
 		}
 	}
