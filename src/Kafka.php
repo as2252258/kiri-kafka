@@ -5,6 +5,8 @@ namespace Kafka;
 
 
 use Kiri\Kiri;
+use Note\Inject;
+use Psr\Log\LoggerInterface;
 use RdKafka\Consumer;
 use RdKafka\ConsumerTopic;
 use RdKafka\Exception;
@@ -24,6 +26,10 @@ class Kafka extends BaseProcess
 
 
 	public string $name = 'kafka';
+
+
+	#[Inject(LoggerInterface::class)]
+	public LoggerInterface $logger;
 
 
 	/**
@@ -89,6 +95,7 @@ class Kafka extends BaseProcess
 			$message = $topic->consume(0, $interval);
 			if (!empty($message)) {
 				if ($message->err == RD_KAFKA_RESP_ERR_NO_ERROR) {
+					$this->logger->debug('kafka message', [json_encode($message)]);
 					$this->handlerExecute($message->topic_name, $message);
 				} else if ($message->err == RD_KAFKA_RESP_ERR__PARTITION_EOF) {
 					logger()->warning('No more messages; will wait for more');
