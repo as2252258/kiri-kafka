@@ -11,6 +11,7 @@ use RdKafka\Consumer;
 use RdKafka\ConsumerTopic;
 use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
+use RdKafka\Message;
 use Server\Abstracts\BaseProcess;
 use Swoole\Process;
 use Throwable;
@@ -67,7 +68,7 @@ class Kafka extends BaseProcess
 			$topic->consumeStart(0, RD_KAFKA_OFFSET_STORED);
 			$this->resolve($topic, $conf['interval'] ?? 1000);
 		} catch (Throwable $exception) {
-			logger()->addError($exception, 'throwable');
+			$this->logger->addError($exception, 'throwable');
 		}
 	}
 
@@ -94,24 +95,35 @@ class Kafka extends BaseProcess
 		try {
 			$message = $topic->consume(0, $interval);
 			if (!empty($message)) {
-				if ($message->err == RD_KAFKA_RESP_ERR_NO_ERROR) {
-					$this->logger->debug('kafka message', [json_encode($message)]);
-					$this->handlerExecute($message->topic_name, $message);
-				} else if ($message->err == RD_KAFKA_RESP_ERR__PARTITION_EOF) {
-					logger()->warning('No more messages; will wait for more');
-				} else if ($message->err == RD_KAFKA_RESP_ERR__TIMED_OUT) {
-					logger()->error('Kafka Timed out');
-				} else {
-					logger()->error($message->errstr());
-				}
+				$this->onCall($message);
 			}
 		} catch (Throwable $exception) {
-			logger()->addError($exception, 'throwable');
+			$this->logger->error('throwable', [$exception]);
 		} finally {
 			if ($this->isStop()) {
 				return;
 			}
 			$this->resolve($topic, $interval);
+		}
+	}
+
+
+	/**
+	 * @param Message $message
+	 * @return void
+	 * @throws \Exception
+	 */
+	private function onCall(Message $message)
+	{
+		if ($message->err == RD_KAFKA_RESP_ERR_NO_ERROR) {
+			$this->logger->debug('kafka message', [json_encode($message)]);
+			$this->handlerExecute($message->topic_name, $message);
+		} else if ($message->err == RD_KAFKA_RESP_ERR__PARTITION_EOF) {
+			$this->logger->warning('No more messages; will wait for more');
+		} else if ($message->err == RD_KAFKA_RESP_ERR__TIMED_OUT) {
+			$this->logger->error('Kafka Timed out');
+		} else {
+			$this->logger->error($message->errstr());
 		}
 	}
 
@@ -134,7 +146,7 @@ class Kafka extends BaseProcess
 			$handler = new $data(new Struct($topic, $message));
 			$handler->process();
 		} catch (Throwable $exception) {
-			logger()->addError($exception, 'throwable');
+			$this->logger->error('throwable', [$exception]);
 		}
 	}
 
@@ -170,7 +182,7 @@ class Kafka extends BaseProcess
 
 			return [$conf, $topicConf, $kafka];
 		} catch (Throwable $exception) {
-			logger()->addError($exception, 'throwable');
+			$this->logger->error('throwable', [$exception]);
 			return [null, null, null];
 		}
 	}
