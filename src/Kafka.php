@@ -87,17 +87,16 @@ class Kafka extends BaseProcess
 	{
 		try {
 			$message = $topic->consume(0, $interval);
-			if (empty($message)) {
-				return;
-			}
-			if ($message->err == RD_KAFKA_RESP_ERR_NO_ERROR) {
-				$this->handlerExecute($message->topic_name, $message);
-			} else if ($message->err == RD_KAFKA_RESP_ERR__PARTITION_EOF) {
-				logger()->warning('No more messages; will wait for more');
-			} else if ($message->err == RD_KAFKA_RESP_ERR__TIMED_OUT) {
-				logger()->error('Kafka Timed out');
-			} else {
-				logger()->error($message->errstr());
+			if (!empty($message)) {
+				if ($message->err == RD_KAFKA_RESP_ERR_NO_ERROR) {
+					$this->handlerExecute($message->topic_name, $message);
+				} else if ($message->err == RD_KAFKA_RESP_ERR__PARTITION_EOF) {
+					logger()->warning('No more messages; will wait for more');
+				} else if ($message->err == RD_KAFKA_RESP_ERR__TIMED_OUT) {
+					logger()->error('Kafka Timed out');
+				} else {
+					logger()->error($message->errstr());
+				}
 			}
 		} catch (Throwable $exception) {
 			logger()->addError($exception, 'throwable');
@@ -117,22 +116,19 @@ class Kafka extends BaseProcess
 	 */
 	protected function handlerExecute($topic, $message)
 	{
-		go(static function () use ($topic, $message) {
-			try {
-				$server = Kiri::app()->getSwoole();
-
-				$setting = $server->setting['worker_num'];
-
-				/** @var KafkaProvider $container */
-				$container = Kiri::getDi()->get(KafkaProvider::class);
-				$data = $container->getConsumer($topic);
-				if (!empty($data)) {
-					$server->sendMessage(new $data(new Struct($topic, $message)), random_int(0, $setting - 1));
-				}
-			} catch (Throwable $exception) {
-				logger()->addError($exception, 'throwable');
+		try {
+			/** @var KafkaProvider $container */
+			$container = Kiri::getDi()->get(KafkaProvider::class);
+			$data = $container->getConsumer($topic);
+			if (empty($data)) {
+				return;
 			}
-		});
+			/** @var ConsumerInterface $handler */
+			$handler = new $data(new Struct($topic, $message));
+			$handler->process();
+		} catch (Throwable $exception) {
+			logger()->addError($exception, 'throwable');
+		}
 	}
 
 
