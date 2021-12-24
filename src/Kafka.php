@@ -139,7 +139,7 @@ class Kafka extends BaseProcess
 			/** @var KafkaProvider $container */
 			$container = Kiri::getDi()->get(KafkaProvider::class);
 			$data = $container->getConsumer($topic);
-			var_dump($data);
+			var_dump($data, $topic, $message);
 			if (empty($data)) {
 				return;
 			}
