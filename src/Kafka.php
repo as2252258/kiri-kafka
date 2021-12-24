@@ -168,9 +168,9 @@ class Kafka extends BaseProcess
 			$conf->setSocketTimeoutMs('50');
 			if (function_exists('pcntl_sigprocmask')) {
 				pcntl_sigprocmask(SIG_BLOCK, [SIGIO]);
-				$conf->set('internal.termination.signal', SIGIO);
+				$conf->set('internal.termination.signal', (string)SIGIO);
 			} else {
-				$conf->set('queue.buffering.max.ms', 1);
+				$conf->set('queue.buffering.max.ms', '1');
 			}
 			$topicConf = new TopicConfig();
 			$topicConf->setEnableAutoCommit(true);
