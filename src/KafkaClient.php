@@ -4,6 +4,7 @@ namespace Kafka;
 
 use Exception;
 use Kiri\Abstracts\Config;
+use Kiri\Core\Network;
 use Kiri\Exception\ConfigException;
 use Kiri\Exception\NotFindClassException;
 use Kiri\Kiri;
@@ -67,7 +68,7 @@ class KafkaClient
 		}
 		$this->conf->setMetadataBrokerList($config['brokers']);
 		$this->conf->setGroupId($this->groupId);
-//		$this->conf->setClientId(current(swoole_get_local_ip()));
+		$this->conf->setClientId(md5(Network::local()));
 		$this->conf->setErrorCb(function ($kafka, $err, $reason) {
 			logger()->error(sprintf("Kafka error: %s (reason: %s)", rd_kafka_err2str($err), $reason));
 		});
