@@ -172,16 +172,16 @@ class Kafka extends BaseProcess
 			} else {
 				$conf->set('queue.buffering.max.ms', '1');
 			}
-			$topicConf = new TopicConfig();
-			$topicConf->setEnableAutoCommit(true);
-			$topicConf->setAutoCommitIntervalMs(100);
-
-			//smallest：简单理解为从头开始消费，
-			//largest：简单理解为从最新的开始消费
-			$topicConf->setAutoOffsetReset('smallest');
-			$topicConf->setOffsetStorePath(storage('kafka_offset.log'));
-
-			$conf->setDefaultTopicConf($topicConf);
+//			$topicConf = new TopicConfig();
+//			$topicConf->setEnableAutoCommit(true);
+//			$topicConf->setAutoCommitIntervalMs(100);
+//
+//			//smallest：简单理解为从头开始消费，
+//			//largest：简单理解为从最新的开始消费
+//			$topicConf->setAutoOffsetReset('smallest');
+//			$topicConf->setOffsetStorePath(storage('kafka_offset.log'));
+//
+//			$conf->setDefaultTopicConf($topicConf);
 			return [$conf, null, $kafka];
 		} catch (Throwable $exception) {
 			$this->logger->error('throwable', [$exception]);
