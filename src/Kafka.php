@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Kafka;
 
 
+use Kiri\Core\Network;
 use Kiri\Kiri;
 use Note\Inject;
 use Psr\Log\LoggerInterface;
@@ -162,6 +163,7 @@ class Kafka extends BaseProcess
 			$conf->setMetadataBrokerList($kafka['brokers']);
 			$conf->setSocketTimeoutMs(30000);
 			$conf->set('auto.offset.reset', 'earliest');
+			$conf->setClientId(md5(Network::local()));
 
 			if (function_exists('pcntl_sigprocmask')) {
 				pcntl_sigprocmask(SIG_BLOCK, [SIGIO]);
