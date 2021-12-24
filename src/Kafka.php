@@ -62,10 +62,9 @@ class Kafka extends BaseProcess
 			if (empty($config) && empty($topic) && empty($conf)) {
 				return;
 			}
-			$objRdKafka = new Consumer($config);
-			$topic = $objRdKafka->newTopic($this->kafkaConfig['topic'], $topic);
+			$objRdKafka = new KafkaConsumer($config);
+			$objRdKafka->subscribe([$this->kafkaConfig['topic']]);
 
-			$topic->consumeStart(0, RD_KAFKA_OFFSET_STORED);
 			$this->resolve($topic, $conf['interval'] ?? 1000);
 		} catch (Throwable $exception) {
 			$this->logger->error('kafka', [$exception]);
@@ -176,7 +175,7 @@ class Kafka extends BaseProcess
 
 			//smallest：简单理解为从头开始消费，
 			//largest：简单理解为从最新的开始消费
-			$topicConf->setAutoOffsetReset('latest');
+			$topicConf->setAutoOffsetReset('earliest');
 			$topicConf->setOffsetStorePath('kafka_offset.log');
 			$topicConf->setOffsetStoreMethod('broker');
 
