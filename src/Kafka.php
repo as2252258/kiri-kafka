@@ -68,7 +68,7 @@ class Kafka extends BaseProcess
 			$topic->consumeStart(0, RD_KAFKA_OFFSET_STORED);
 			$this->resolve($topic, $conf['interval'] ?? 1000);
 		} catch (Throwable $exception) {
-			$this->logger->addError($exception, 'throwable');
+			$this->logger->error($exception, 'throwable');
 		}
 	}
 
