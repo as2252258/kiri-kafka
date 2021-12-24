@@ -177,7 +177,7 @@ class Kafka extends BaseProcess
 
 			//smallest：简单理解为从头开始消费，
 			//largest：简单理解为从最新的开始消费
-			$topicConf->setAutoOffsetReset('smallest');
+			$topicConf->setAutoOffsetReset('largest');
 			$topicConf->setOffsetStorePath('kafka_offset.log');
 			$topicConf->setOffsetStoreMethod('broker');
 
