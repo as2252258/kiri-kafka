@@ -7,8 +7,6 @@ namespace Kafka;
 use Kiri\Kiri;
 use Note\Inject;
 use Psr\Log\LoggerInterface;
-use RdKafka\Consumer;
-use RdKafka\ConsumerTopic;
 use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
@@ -59,7 +57,7 @@ class Kafka extends BaseProcess
 	{
 		try {
 			[$config, $topic, $conf] = $this->kafkaConfig($this->kafkaConfig);
-			if (empty($config) && empty($topic) && empty($conf)) {
+			if (empty($config) && empty($conf)) {
 				return;
 			}
 			$objRdKafka = new KafkaConsumer($config);
@@ -92,7 +90,7 @@ class Kafka extends BaseProcess
 	private function resolve(KafkaConsumer $topic, $interval)
 	{
 		try {
-			$message = $topic->consume( $interval);
+			$message = $topic->consume($interval);
 			if (!empty($message)) {
 				$this->onCall($message);
 			}
@@ -163,23 +161,24 @@ class Kafka extends BaseProcess
 			$conf->setGroupId($kafka['groupId']);
 			$conf->setMetadataBrokerList($kafka['brokers']);
 			$conf->setSocketTimeoutMs(30000);
+			$conf->set('auto.offset.reset', 'earliest');
 
 			if (function_exists('pcntl_sigprocmask')) {
 				pcntl_sigprocmask(SIG_BLOCK, [SIGIO]);
 				$conf->setInternalTerminationSignal((string)SIGIO);
 			}
 
-			$topicConf = new TopicConfig();
-			$topicConf->setEnableAutoCommit(true);
-			$topicConf->setAutoCommitIntervalMs(100);
+//			$topicConf = new TopicConfig();
+//			$topicConf->setEnableAutoCommit(true);
+//			$topicConf->setAutoCommitIntervalMs(100);
+//
+//			//smallest：简单理解为从头开始消费，
+//			//largest：简单理解为从最新的开始消费
+//			$topicConf->setAutoOffsetReset('earliest');
+//			$topicConf->setOffsetStorePath('kafka_offset.log');
+//			$topicConf->setOffsetStoreMethod('broker');
 
-			//smallest：简单理解为从头开始消费，
-			//largest：简单理解为从最新的开始消费
-			$topicConf->setAutoOffsetReset('earliest');
-			$topicConf->setOffsetStorePath('kafka_offset.log');
-			$topicConf->setOffsetStoreMethod('broker');
-
-			return [$conf, $topicConf, $kafka];
+			return [$conf, null, $kafka];
 		} catch (Throwable $exception) {
 			$this->logger->error('throwable', [$exception]);
 			return [null, null, null];
