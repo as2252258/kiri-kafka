@@ -165,7 +165,7 @@ class Kafka extends BaseProcess
 			$conf->setRebalanceCb([$this, 'rebalanced_cb']);
 			$conf->setGroupId($kafka['groupId']);
 			$conf->setMetadataBrokerList($kafka['brokers']);
-			$conf->setSocketTimeoutMs(50);
+			$conf->setSocketTimeoutMs('50');
 			if (function_exists('pcntl_sigprocmask')) {
 				pcntl_sigprocmask(SIG_BLOCK, [SIGIO]);
 				$conf->set('internal.termination.signal', SIGIO);
