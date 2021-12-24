@@ -368,10 +368,10 @@ class Configuration extends Conf
 	/**
 	 * @param mixed $default_topic_conf
 	 */
-	public function setDefaultTopicConf(mixed $default_topic_conf): void
-	{
-		$this->set(Constant::CONFIG_DEFAULT_TOPIC_CONF, $default_topic_conf);
-	}
+//	public function setDefaultTopicConf(mixed $default_topic_conf): void
+//	{
+//		$this->set(Constant::CONFIG_DEFAULT_TOPIC_CONF, $default_topic_conf);
+//	}
 
 	/**
 	 * @param mixed $internal_termination_signal
