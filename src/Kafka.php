@@ -171,7 +171,7 @@ class Kafka extends BaseProcess
 			}
 
 			$topicConf = new TopicConfig();
-			$topicConf->setEnableAutoCommit(false);
+			$topicConf->setEnableAutoCommit(true);
 			$topicConf->setAutoCommitIntervalMs(100);
 
 			//smallest：简单理解为从头开始消费，
