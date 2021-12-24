@@ -65,7 +65,7 @@ class Kafka extends BaseProcess
 			$objRdKafka = new KafkaConsumer($config);
 			$objRdKafka->subscribe([$this->kafkaConfig['topic']]);
 
-			$this->resolve($topic, $conf['interval'] ?? 1000);
+			$this->resolve($objRdKafka, $conf['interval'] ?? 1000);
 		} catch (Throwable $exception) {
 			$this->logger->error('kafka', [$exception]);
 		}
@@ -85,14 +85,14 @@ class Kafka extends BaseProcess
 
 
 	/**
-	 * @param ConsumerTopic $topic
+	 * @param KafkaConsumer $topic
 	 * @param $interval
 	 * @throws \Exception
 	 */
-	private function resolve(ConsumerTopic $topic, $interval)
+	private function resolve(KafkaConsumer $topic, $interval)
 	{
 		try {
-			$message = $topic->consume(0, $interval);
+			$message = $topic->consume( $interval);
 			if (!empty($message)) {
 				$this->onCall($message);
 			}
