@@ -6,11 +6,9 @@ use Exception;
 use Kiri\Abstracts\Config;
 use Kiri\Core\Network;
 use Kiri\Exception\ConfigException;
-use Kiri\Exception\NotFindClassException;
 use Kiri\Kiri;
 use RdKafka\Producer;
 use RdKafka\ProducerTopic;
-use ReflectionException;
 
 
 /**
@@ -23,6 +21,9 @@ class KafkaClient
 	private Configuration $conf;
 	private TopicConfig $topicConf;
 
+
+	private string $groupId = '';
+
 	private bool $isAck = true;
 
 	/**
@@ -30,11 +31,17 @@ class KafkaClient
 	 * @param string $topic
 	 * @param string $groupId
 	 * @throws ConfigException
+	 * @throws \ReflectionException
 	 */
-	public function __construct(public string $topic, public string $groupId)
+	public function __construct(public string $topic, string $groupId = '')
 	{
 		$this->conf = di(Configuration::class);
 		$this->topicConf = di(TopicConfig::class);
+
+		$this->groupId = $groupId;
+		if (empty($this->groupId)) {
+			$this->groupId = Config::get('kafka.producers.' . $this->topic . '.groupId', null, true);
+		}
 		$this->setConfig();
 	}
 
