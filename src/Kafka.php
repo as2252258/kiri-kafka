@@ -7,6 +7,8 @@ namespace Kafka;
 use Kiri\Kiri;
 use Note\Inject;
 use Psr\Log\LoggerInterface;
+use RdKafka\Consumer;
+use RdKafka\ConsumerTopic;
 use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
@@ -29,9 +31,6 @@ class Kafka extends BaseProcess
 
 	#[Inject(LoggerInterface::class)]
 	public LoggerInterface $logger;
-
-
-	public KafkaConsumer $consumer;
 
 
 	/**
@@ -60,42 +59,41 @@ class Kafka extends BaseProcess
 	{
 		try {
 			[$config, $topic, $conf] = $this->kafkaConfig($this->kafkaConfig);
-			if (empty($config) && empty($conf)) {
+			if (empty($config) && empty($topic) && empty($conf)) {
 				return;
 			}
-			$this->consumer = new KafkaConsumer($config);
-			$this->consumer->subscribe([$this->kafkaConfig['topic']]);
+			$objRdKafka = new Consumer($config);
+			$topic = $objRdKafka->newTopic($this->kafkaConfig['topic'], $topic);
 
-			$this->resolve($conf['interval'] ?? 1000);
+			$topic->consumeStart(0, RD_KAFKA_OFFSET_STORED);
+			$this->resolve($topic, $conf['interval'] ?? 1000);
 		} catch (Throwable $exception) {
-			$this->logger->error('kafka', [$exception]);
+			$this->logger->error($exception);
 		}
 	}
 
 
 	/**
 	 * @return $this
-	 * @throws Exception
 	 */
 	public function onSigterm(): static
 	{
 		pcntl_signal(SIGTERM, function () {
 			$this->onShutdown(1);
-			$this->consumer->unsubscribe();
-			$this->consumer->close();
 		});
 		return $this;
 	}
 
 
 	/**
+	 * @param ConsumerTopic $topic
 	 * @param $interval
 	 * @throws \Exception
 	 */
-	private function resolve($interval)
+	private function resolve(ConsumerTopic $topic, $interval)
 	{
 		try {
-			$message = $this->consumer->consume($interval);
+			$message = $topic->consume(0, $interval);
 			if (!empty($message)) {
 				$this->onCall($message);
 			}
@@ -105,7 +103,7 @@ class Kafka extends BaseProcess
 			if ($this->isStop()) {
 				return;
 			}
-			$this->resolve($interval);
+			$this->resolve($topic, $interval);
 		}
 	}
 
@@ -165,24 +163,24 @@ class Kafka extends BaseProcess
 			$conf->setRebalanceCb([$this, 'rebalanced_cb']);
 			$conf->setGroupId($kafka['groupId']);
 			$conf->setMetadataBrokerList($kafka['brokers']);
-			$conf->setSocketTimeoutMs('50');
+			$conf->setSocketTimeoutMs(30000);
+
 			if (function_exists('pcntl_sigprocmask')) {
 				pcntl_sigprocmask(SIG_BLOCK, [SIGIO]);
-				$conf->set('internal.termination.signal', (string)SIGIO);
-			} else {
-				$conf->set('queue.buffering.max.ms', '1');
+				$conf->setInternalTerminationSignal((string)SIGIO);
 			}
-//			$topicConf = new TopicConfig();
-//			$topicConf->setEnableAutoCommit(true);
-//			$topicConf->setAutoCommitIntervalMs(100);
-//
-//			//smallest：简单理解为从头开始消费，
-//			//largest：简单理解为从最新的开始消费
-//			$topicConf->setAutoOffsetReset('smallest');
-//			$topicConf->setOffsetStorePath(storage('kafka_offset.log'));
-//
-//			$conf->setDefaultTopicConf($topicConf);
-			return [$conf, null, $kafka];
+
+			$topicConf = new TopicConfig();
+			$topicConf->setAutoCommitEnable(true);
+			$topicConf->setAutoCommitIntervalMs(100);
+
+			//smallest：简单理解为从头开始消费，
+			//largest：简单理解为从最新的开始消费
+			$topicConf->setAutoOffsetReset('smallest');
+			$topicConf->setOffsetStorePath('kafka_offset.log');
+			$topicConf->setOffsetStoreMethod('broker');
+
+			return [$conf, $topicConf, $kafka];
 		} catch (Throwable $exception) {
 			$this->logger->error('throwable', [$exception]);
 			return [null, null, null];
