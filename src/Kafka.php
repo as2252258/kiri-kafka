@@ -74,18 +74,6 @@ class Kafka extends BaseProcess
 
 
 	/**
-	 * @return $this
-	 */
-	public function onSigterm(): static
-	{
-		pcntl_signal(SIGTERM, function () {
-			$this->onShutdown(1);
-		});
-		return $this;
-	}
-
-
-	/**
 	 * @param ConsumerTopic $topic
 	 * @param $interval
 	 * @throws \Exception
