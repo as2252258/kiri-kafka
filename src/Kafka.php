@@ -139,6 +139,15 @@ class Kafka extends BaseProcess
 	}
 
 
+	public function onSigterm(): static
+	{
+		pcntl_signal(SIGTERM, function () {
+			$this->isStop = true;
+		});
+		return $this;
+	}
+
+
 	/**
 	 * @param $kafka
 	 * @return array
