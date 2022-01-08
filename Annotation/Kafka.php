@@ -1,10 +1,10 @@
 <?php
 
 
-namespace Kafka\Note;
+namespace Kafka\Annotation;
 
 
-use Note\Attribute;
+use Kiri\Annotation\Attribute;
 use Exception;
 use Kafka\ConsumerInterface;
 use Kafka\KafkaProvider;
@@ -12,7 +12,7 @@ use Kiri\Kiri;
 
 /**
  * Class Kafka
- * @package Note
+ * @package Annotation
  */
 #[\Attribute(\Attribute::TARGET_CLASS)] class Kafka extends Attribute
 {

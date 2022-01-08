@@ -5,7 +5,7 @@ namespace Kafka;
 
 
 use Kiri\Kiri;
-use Note\Inject;
+use Kiri\Annotation\Inject;
 use Psr\Log\LoggerInterface;
 use RdKafka\Consumer;
 use RdKafka\ConsumerTopic;
@@ -20,7 +20,7 @@ use Throwable;
  * Class Queue
  * @package Queue
  */
-class HighKafka extends BaseProcess
+class Kafka extends BaseProcess
 {
 
 	protected bool $enableSwooleCoroutine = true;
@@ -62,10 +62,11 @@ class HighKafka extends BaseProcess
 			if (empty($config) && empty($topic) && empty($conf)) {
 				return;
 			}
-			$objRdKafka = new KafkaConsumer($config);
-			$objRdKafka->subscribe([$this->kafkaConfig['topic']]);
+			$objRdKafka = new Consumer($config);
+			$topic = $objRdKafka->newTopic($this->kafkaConfig['topic'], $topic);
 
-			$this->resolve($objRdKafka, $conf['interval'] ?? 1000);
+			$topic->consumeStart(0, RD_KAFKA_OFFSET_STORED);
+			$this->resolve($topic, $conf['interval'] ?? 1000);
 		} catch (Throwable $exception) {
 			$this->logger->error($exception);
 		}
@@ -73,26 +74,14 @@ class HighKafka extends BaseProcess
 
 
 	/**
-	 * @return $this
-	 */
-	public function onSigterm(): static
-	{
-		pcntl_signal(SIGTERM, function () {
-			$this->onShutdown(1);
-		});
-		return $this;
-	}
-
-
-	/**
-	 * @param KafkaConsumer $topic
+	 * @param ConsumerTopic $topic
 	 * @param $interval
 	 * @throws \Exception
 	 */
-	private function resolve(KafkaConsumer $topic, $interval)
+	private function resolve(ConsumerTopic $topic, $interval)
 	{
 		try {
-			$message = $topic->consume(0);
+			$message = $topic->consume(0, $interval);
 			if (!empty($message)) {
 				$this->onCall($message);
 			}
@@ -150,6 +139,15 @@ class HighKafka extends BaseProcess
 	}
 
 
+	public function onSigterm(): static
+	{
+		pcntl_signal(SIGTERM, function () {
+			$this->isStop = true;
+		});
+		return $this;
+	}
+
+
 	/**
 	 * @param $kafka
 	 * @return array
@@ -175,9 +173,9 @@ class HighKafka extends BaseProcess
 
 			//smallest：简单理解为从头开始消费，
 			//largest：简单理解为从最新的开始消费
-			$topicConf->setAutoOffsetReset('earliest');
-//			$topicConf->setOffsetStorePath('kafka_offset.log');
-//			$topicConf->setOffsetStoreMethod('broker');
+			$topicConf->setAutoOffsetReset('smallest');
+			$topicConf->setOffsetStorePath('kafka_offset.log');
+			$topicConf->setOffsetStoreMethod('broker');
 
 			return [$conf, $topicConf, $kafka];
 		} catch (Throwable $exception) {

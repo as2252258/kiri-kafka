@@ -17,7 +17,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Kafka\\": "src/"
+      "Kafka\\": "./"
      }
   },
   "require-dev": {
