@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace Kafka;
 
 
-use Kiri\Kiri;
 use Kiri\Annotation\Inject;
+use Kiri\Kiri;
 use Psr\Log\LoggerInterface;
 use RdKafka\Consumer;
 use RdKafka\ConsumerTopic;
@@ -13,6 +13,7 @@ use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use Server\Abstracts\BaseProcess;
+use Swoole\Coroutine;
 use Swoole\Process;
 use Throwable;
 
@@ -83,7 +84,9 @@ class Kafka extends BaseProcess
 		try {
 			$message = $topic->consume(0, $interval);
 			if (!empty($message)) {
-				$this->onCall($message);
+				Coroutine::create(function ($message) {
+					$this->onCall($message);
+				}, $message);
 			}
 		} catch (Throwable $exception) {
 			$this->logger->error('throwable', [$exception]);
