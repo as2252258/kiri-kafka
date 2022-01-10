@@ -12,7 +12,7 @@ use RdKafka\ConsumerTopic;
 use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
-use Server\Abstracts\BaseProcess;
+use Kiri\Server\Abstracts\BaseProcess;
 use Swoole\Coroutine;
 use Swoole\Process;
 use Throwable;
