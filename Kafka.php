@@ -69,7 +69,7 @@ class Kafka extends BaseProcess
 			$topic->consumeStart(0, RD_KAFKA_OFFSET_STORED);
 			$this->resolve($topic, $conf['interval'] ?? 1000);
 		} catch (Throwable $exception) {
-			$this->logger->error($exception);
+			$this->logger->error(error_trigger_format($exception));
 		}
 	}
 
@@ -89,7 +89,7 @@ class Kafka extends BaseProcess
 				}, $message);
 			}
 		} catch (Throwable $exception) {
-			$this->logger->error('throwable', [$exception]);
+			$this->logger->error('throwable', [error_trigger_format($exception)]);
 		} finally {
 			if ($this->isStop()) {
 				return;
@@ -137,7 +137,7 @@ class Kafka extends BaseProcess
 			$handler = new $data(new Struct($topic, $message));
 			$handler->process();
 		} catch (Throwable $exception) {
-			$this->logger->error('throwable', [$exception]);
+			$this->logger->error('throwable', [error_trigger_format($exception)]);
 		}
 	}
 
@@ -182,7 +182,7 @@ class Kafka extends BaseProcess
 
 			return [$conf, $topicConf, $kafka];
 		} catch (Throwable $exception) {
-			$this->logger->error('throwable', [$exception]);
+			$this->logger->error('throwable', [error_trigger_format($exception)]);
 			return [null, null, null];
 		}
 	}

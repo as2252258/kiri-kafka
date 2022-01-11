@@ -67,7 +67,7 @@ class HighKafka extends BaseProcess
 
 			$this->resolve($objRdKafka, $conf['interval'] ?? 1000);
 		} catch (Throwable $exception) {
-			$this->logger->error($exception);
+			$this->logger->error(error_trigger_format($exception));
 		}
 	}
 
@@ -97,7 +97,7 @@ class HighKafka extends BaseProcess
 				$this->onCall($message);
 			}
 		} catch (Throwable $exception) {
-			$this->logger->error('throwable', [$exception]);
+			$this->logger->error('throwable', [error_trigger_format($exception)]);
 		} finally {
 			if ($this->isStop()) {
 				return;
@@ -145,7 +145,7 @@ class HighKafka extends BaseProcess
 			$handler = new $data(new Struct($topic, $message));
 			$handler->process();
 		} catch (Throwable $exception) {
-			$this->logger->error('throwable', [$exception]);
+			$this->logger->error('throwable', [error_trigger_format($exception)]);
 		}
 	}
 
@@ -181,7 +181,7 @@ class HighKafka extends BaseProcess
 
 			return [$conf, $topicConf, $kafka];
 		} catch (Throwable $exception) {
-			$this->logger->error('throwable', [$exception]);
+			$this->logger->error('throwable', [error_trigger_format($exception)]);
 			return [null, null, null];
 		}
 	}
