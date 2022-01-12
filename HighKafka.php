@@ -43,6 +43,16 @@ class HighKafka extends BaseProcess
 
 
 	/**
+	 * @param $message
+	 * @return void
+	 */
+	public function onBroadcast($message)
+	{
+		var_dump($message . '::' . static::class);
+	}
+
+
+	/**
 	 * @return string
 	 */
 	public function getName(): string
