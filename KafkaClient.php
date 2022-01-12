@@ -6,7 +6,7 @@ use Exception;
 use Kiri\Abstracts\Config;
 use Kiri\Core\Network;
 use Kiri\Exception\ConfigException;
-use Kiri\Kiri;
+use Kiri;
 use RdKafka\Producer;
 use RdKafka\ProducerTopic;
 

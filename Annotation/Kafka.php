@@ -8,7 +8,7 @@ use Kiri\Annotation\Attribute;
 use Exception;
 use Kafka\ConsumerInterface;
 use Kafka\KafkaProvider;
-use Kiri\Kiri;
+use Kiri;
 
 /**
  * Class Kafka

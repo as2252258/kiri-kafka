@@ -5,7 +5,7 @@ namespace Kafka;
 
 
 use Kiri\Annotation\Inject;
-use Kiri\Kiri;
+use Kiri;
 use Kiri\Server\Abstracts\BaseProcess;
 use Kiri\Server\Broadcast\OnBroadcastInterface;
 use Psr\Log\LoggerInterface;
