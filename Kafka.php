@@ -6,13 +6,14 @@ namespace Kafka;
 
 use Kiri\Annotation\Inject;
 use Kiri\Kiri;
+use Kiri\Server\Abstracts\BaseProcess;
+use Kiri\Server\Broadcast\OnBroadcastInterface;
 use Psr\Log\LoggerInterface;
 use RdKafka\Consumer;
 use RdKafka\ConsumerTopic;
 use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
-use Kiri\Server\Abstracts\BaseProcess;
 use Swoole\Coroutine;
 use Swoole\Process;
 use Throwable;
@@ -44,13 +45,12 @@ class Kafka extends BaseProcess
 
 
 	/**
-	 * @param $message
+	 * @param OnBroadcastInterface $message
 	 * @return void
 	 */
-	public function onBroadcast($message)
+	public function onBroadcast(OnBroadcastInterface $message): void
 	{
-		$logger = Kiri::getDi()->get(LoggerInterface::class);
-		$logger->debug($message->data . '::' . static::class);
+		$message->process();
 	}
 
 

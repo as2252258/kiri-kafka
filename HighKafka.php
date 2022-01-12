@@ -4,15 +4,14 @@ declare(strict_types=1);
 namespace Kafka;
 
 
-use Kiri\Kiri;
 use Kiri\Annotation\Inject;
+use Kiri\Kiri;
+use Kiri\Server\Abstracts\BaseProcess;
+use Kiri\Server\Broadcast\OnBroadcastInterface;
 use Psr\Log\LoggerInterface;
-use RdKafka\Consumer;
-use RdKafka\ConsumerTopic;
 use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
-use Kiri\Server\Abstracts\BaseProcess;
 use Swoole\Process;
 use Throwable;
 
@@ -43,12 +42,12 @@ class HighKafka extends BaseProcess
 
 
 	/**
-	 * @param $message
+	 * @param OnBroadcastInterface $message
 	 * @return void
 	 */
-	public function onBroadcast($message)
+	public function onBroadcast(OnBroadcastInterface $message): void
 	{
-		var_dump($message . '::' . static::class);
+		$message->process();
 	}
 
 
