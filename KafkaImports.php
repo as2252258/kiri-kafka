@@ -40,7 +40,7 @@ class KafkaImports extends Providers
 			$num = $kafkaServer['consumer_total'] ?? 1;
 			$class = $kafkaServer['class'] ?? Kafka::class;
 			for ($i = 0; $i < $num; $i++) {
-				$instance = $this->container->create($class, [$kafkaServer]);
+				$instance = $this->getContainer()->create($class, [$kafkaServer]);
 				$instance->name = $instance->name . '.' . $i;
 				$server->addProcess($instance);
 			}
