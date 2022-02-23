@@ -4,7 +4,7 @@
 namespace Kafka\Annotation;
 
 
-use Kiri\Annotation\Attribute;
+use Kiri\Annotation\AbstractAttribute;
 use Exception;
 use Kafka\ConsumerInterface;
 use Kafka\KafkaProvider;
@@ -14,7 +14,7 @@ use Kiri;
  * Class Kafka
  * @package Annotation
  */
-#[\Attribute(\Attribute::TARGET_CLASS)] class Kafka extends Attribute
+#[\Attribute(\Attribute::TARGET_CLASS)] class Kafka extends AbstractAttribute
 {
 
 
