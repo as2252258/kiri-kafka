@@ -101,7 +101,7 @@ class HighKafka extends BaseProcess
 	private function resolve(KafkaConsumer $topic, $interval)
 	{
 		try {
-			$message = $topic->consume($interval);
+			$message = $topic->consume(-1);
 			if (!empty($message)) {
 				$this->onCall($message);
 			}
