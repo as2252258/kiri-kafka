@@ -24,13 +24,13 @@ class Struct
 	 */
 	public function __construct(string $topic, Message $message)
 	{
-		$message->payload = swoole_unserialize($message->payload);
+		$payload = swoole_unserialize($message->payload);
 
 		$this->topic = $topic;
 		$this->offset = $message->offset;
 		$this->part = $message->partition;
 		$this->message = $message;
-		$this->value = $message->payload;
+		$this->value = $payload;
 	}
 
 }
