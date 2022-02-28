@@ -22,7 +22,7 @@ use Throwable;
 class HighKafka extends BaseProcess
 {
 
-	protected bool $enableSwooleCoroutine = true;
+	protected bool $enableSwooleCoroutine = false;
 
 
 	public string $name = 'kafka';
