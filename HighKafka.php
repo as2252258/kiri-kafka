@@ -12,6 +12,7 @@ use Psr\Log\LoggerInterface;
 use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
+use RdKafka\Topic;
 use Swoole\Process;
 use Throwable;
 
@@ -26,6 +27,9 @@ class HighKafka extends BaseProcess
 
 
 	public string $name = 'kafka';
+
+
+	private KafkaConsumer $topic;
 
 
 	#[Inject(LoggerInterface::class)]
@@ -71,10 +75,10 @@ class HighKafka extends BaseProcess
 			if (empty($config) && empty($topic) && empty($conf)) {
 				return;
 			}
-			$objRdKafka = new KafkaConsumer($config);
-			$objRdKafka->subscribe([$this->kafkaConfig['topic']]);
+			$this->topic = new KafkaConsumer($config);
+			$this->topic->subscribe([$this->kafkaConfig['topic']]);
 
-			$this->resolve($objRdKafka, $conf['interval'] ?? 1000);
+			$this->resolve($this->topic, $conf['interval'] ?? 1000);
 		} catch (Throwable $exception) {
 			$this->logger->error(error_trigger_format($exception));
 		}
@@ -87,6 +91,8 @@ class HighKafka extends BaseProcess
 	public function onSigterm(): static
 	{
 		pcntl_signal(SIGTERM, function () {
+			$this->topic->close();
+
 			$this->onShutdown(1);
 		});
 		return $this;
