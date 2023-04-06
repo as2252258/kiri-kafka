@@ -31,8 +31,7 @@ class KafkaClient
 	 * @param string $topic
 	 * @param string $groupId
 	 * @throws ConfigException
-	 * @throws \ReflectionException
-	 */
+     */
 	public function __construct(public string $topic, string $groupId = '')
 	{
 		$this->conf = di(Configuration::class);
@@ -67,8 +66,8 @@ class KafkaClient
 	/**
 	 * @throws ConfigException
 	 */
-	private function setConfig()
-	{
+	private function setConfig(): void
+    {
 		$config = Config::get('kafka.producers.' . $this->topic, null, true);
 		if (!isset($config['brokers'])) {
 			throw new ConfigException('Please configure relevant information.');
